@@ -1,0 +1,44 @@
+# --------------------
+# Virtual environments
+# --------------------
+# For a venv called ".venv" (or "venv" or "env")
+.venv/
+venv/
+env/
+
+# --------------------
+# Byte-compiled / cache
+# --------------------
+__pycache__/
+*/__pycache__/
+*.py[cod]
+*$py.class
+
+# --------------------
+# Distribution / packaging
+# --------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+*.whl
+
+# --------------------
+# IDE / Editor folders
+# --------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# --------------------
+# System files
+# --------------------
+.DS_Store
+Thumbs.db
+
+# --------------------
+# Misc
+# --------------------
+progress.json        # if you don’t want to commit user progress
+mk_flag.png          # if this is generated or user-specific
