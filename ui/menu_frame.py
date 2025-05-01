@@ -1,11 +1,14 @@
 # FILE: ui/menu_frame.py
 
+import re
 import customtkinter as ctk
 
 # Manual overrides for folder-name → display text
 DISPLAY_OVERRIDES = {
-    'basicverbs': 'Basic Verbs',
-    # add more overrides here if needed
+    'basicverbs':    'Basic Verbs',
+    'commonphrases': 'Common Phrases',
+    'directionstime':'Directions & Time',
+    # add more overrides here as needed
 }
 
 class MenuFrame(ctk.CTkFrame):
@@ -20,7 +23,7 @@ class MenuFrame(ctk.CTkFrame):
         on_exit
     ):
         super().__init__(master)
-        self.topics = topics
+        self.topics    = topics
         self.on_select = on_select
 
         # Title
@@ -45,26 +48,31 @@ class MenuFrame(ctk.CTkFrame):
         # Bottom controls: Save, Reset, Exit
         btnf = ctk.CTkFrame(self)
         btnf.pack(pady=10)
-        ctk.CTkButton(btnf, text='Save Progress', command=on_save)\
+        ctk.CTkButton(btnf, text='Save Progress',  command=on_save)\
             .grid(row=0, column=0, padx=5)
         ctk.CTkButton(btnf, text='Reset Progress', command=on_reset)\
             .grid(row=0, column=1, padx=5)
-        ctk.CTkButton(btnf, text='Exit', command=on_exit)\
+        ctk.CTkButton(btnf, text='Exit',           command=on_exit)\
             .grid(row=0, column=2, padx=5)
 
     def build_topic_menu(self):
-        # clear existing
+        # clear existing buttons
         for b in self.topic_buttons:
             b.destroy()
         self.topic_buttons.clear()
 
-        # NOTE: we now iterate ALL topics, not just up to unlocked_topic
+        # iterate ALL topics
         for i, topic in enumerate(self.topics):
-            # compute display name (override or Title Case)
+            # 1) strip leading numbers + underscore, e.g. "06_CommonPhrases" → "CommonPhrases"
+            raw = re.sub(r'^\d+_?', '', topic)
+            key = raw.lower()
+
+            # 2) apply override or default Title Case
             display = DISPLAY_OVERRIDES.get(
-                topic,
-                topic.replace('_', ' ').title()
+                key,
+                raw.replace('_', ' ').title()
             )
+
             btn = ctk.CTkButton(
                 self.topic_scroll,
                 text=display,

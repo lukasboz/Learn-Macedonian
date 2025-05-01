@@ -1,31 +1,33 @@
 # FILE: ui/selection_frame.py
 
+import re
 import customtkinter as ctk
 
-# Manual overrides: normalized key → desired display name
+# Manual overrides for folder-name → display text
 DISPLAY_OVERRIDES = {
-    'basicverbs': 'Basic Verbs',
-    # you can add more overrides here in the same normalized form
+    'basicverbs':     'Basic Verbs',
+    'commonphrases':  'Common Phrases',
+    'directionstime': 'Directions & Time',
+    'greetings':      'Greetings',
+    'food':           'Food',
+    # add more overrides here if needed
 }
 
 class SelectionFrame(ctk.CTkFrame):
-    def __init__(self, master, topic_display_raw, sublessons, on_start, on_back):
+    def __init__(self, master, topic_folder, sublessons, on_start, on_back):
         super().__init__(master)
 
-        # Normalize the incoming topic name to a key:
-        #  - strip whitespace
-        #  - lowercase
-        #  - remove spaces & underscores
-        key = (
-            topic_display_raw
-            .strip()
-            .lower()
-            .replace(' ', '')
-            .replace('_', '')
-        )
+        # 1) strip leading digits + underscore (e.g. "01_Greetings" → "Greetings")
+        raw = re.sub(r'^\d+_?', '', topic_folder)
 
-        # Look up an override, or fall back to the raw display
-        self.display_name = DISPLAY_OVERRIDES.get(key, topic_display_raw)
+        # 2) normalize key to look up overrides
+        key = raw.lower().replace('_', '').replace(' ', '')
+
+        # 3) choose display name
+        self.display_name = DISPLAY_OVERRIDES.get(
+            key,
+            raw.replace('_', ' ').title()
+        )
 
         # Header
         ctk.CTkLabel(
@@ -34,7 +36,7 @@ class SelectionFrame(ctk.CTkFrame):
             font=('Arial', 20, 'bold')
         ).pack(pady=10)
 
-        # Scrollable list of sub-lessons
+        # Scrollable list of lessons
         self.lesson_scroll = ctk.CTkScrollableFrame(
             self,
             width=300,
@@ -43,15 +45,18 @@ class SelectionFrame(ctk.CTkFrame):
         self.lesson_scroll.pack(pady=10)
 
         self.lesson_buttons = []
+
         for idx, fn in enumerate(sublessons):
             base = fn[:-4]  # strip “.csv”
+
             if base.startswith('match_'):
-                # matching game
-                title = base.split('match_', 1)[1].replace('_', ' ').title()
+                # Matching‐game lesson
+                title_key = base.split('match_', 1)[1]
+                title = title_key.replace('_', ' ').title()
                 text = f'{self.display_name} Matching: {title}'
             else:
-                # regular quiz
-                text = f'{self.display_name} {idx+1}'
+                # Quiz lesson → now labeled as Definitions
+                text = f'{self.display_name} Definitions: {idx+1}'
 
             btn = ctk.CTkButton(
                 self.lesson_scroll,
