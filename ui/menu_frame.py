@@ -5,10 +5,14 @@ import customtkinter as ctk
 
 # Manual overrides for folder-name → display text
 DISPLAY_OVERRIDES = {
-    'basicverbs':    'Basic Verbs',
-    'commonphrases': 'Common Phrases',
-    'directionstime':'Directions & Time',
-    # add more overrides here as needed
+    'basicverbs':     'Basic Verbs',
+    'commonphrases':  'Common Phrases',
+    'directionstime': 'Directions & Time',
+    'greetings':      'Greetings',
+    'food':           'Food',
+    'pronouns':       'Pronouns',
+    'family':         'Family',
+    # add more overrides here if needed
 }
 
 class MenuFrame(ctk.CTkFrame):
@@ -16,24 +20,24 @@ class MenuFrame(ctk.CTkFrame):
         self,
         master,
         topics,
-        unlocked_topic,   # still accepted but no longer used for gating
         on_select,
+        on_view_progress,
         on_save,
         on_reset,
         on_exit
     ):
         super().__init__(master)
-        self.topics    = topics
+        self.topics = topics
         self.on_select = on_select
 
-        # Title
+        # Title (centered by default)
         ctk.CTkLabel(
             self,
             text='Choose a Topic',
             font=('Arial', 24, 'bold')
-        ).pack(pady=10)
+        ).pack(pady=(20, 10))
 
-        # Scrollable container for topic buttons
+        # Scrollable list of topics
         self.topic_scroll = ctk.CTkScrollableFrame(
             self,
             width=300,
@@ -41,19 +45,41 @@ class MenuFrame(ctk.CTkFrame):
         )
         self.topic_scroll.pack(pady=10)
 
-        # build buttons (will show all topics)
+        # Build topic buttons
         self.topic_buttons = []
         self.build_topic_menu()
 
-        # Bottom controls: Save, Reset, Exit
-        btnf = ctk.CTkFrame(self)
-        btnf.pack(pady=10)
-        ctk.CTkButton(btnf, text='Save Progress',  command=on_save)\
-            .grid(row=0, column=0, padx=5)
-        ctk.CTkButton(btnf, text='Reset Progress', command=on_reset)\
-            .grid(row=0, column=1, padx=5)
-        ctk.CTkButton(btnf, text='Exit',           command=on_exit)\
-            .grid(row=0, column=2, padx=5)
+        # Progress-related buttons (centered)
+        prog_frame = ctk.CTkFrame(self)
+        prog_frame.pack(pady=(20, 5))
+        ctk.CTkButton(
+            prog_frame,
+            text='View Progress',
+            width=120,
+            command=on_view_progress
+        ).grid(row=0, column=0, padx=10)
+        ctk.CTkButton(
+            prog_frame,
+            text='Save Progress',
+            width=120,
+            command=on_save
+        ).grid(row=0, column=1, padx=10)
+        ctk.CTkButton(
+            prog_frame,
+            text='Reset Progress',
+            width=120,
+            command=on_reset
+        ).grid(row=0, column=2, padx=10)
+
+        # Exit button on its own row, centered
+        exit_frame = ctk.CTkFrame(self)
+        exit_frame.pack(pady=(5, 20))
+        ctk.CTkButton(
+            exit_frame,
+            text='Exit',
+            width=120,
+            command=on_exit
+        ).pack()
 
     def build_topic_menu(self):
         # clear existing buttons
@@ -61,13 +87,12 @@ class MenuFrame(ctk.CTkFrame):
             b.destroy()
         self.topic_buttons.clear()
 
-        # iterate ALL topics
         for i, topic in enumerate(self.topics):
-            # 1) strip leading numbers + underscore, e.g. "06_CommonPhrases" → "CommonPhrases"
+            # strip leading digits + underscore, e.g. "05_Pronouns" → "Pronouns"
             raw = re.sub(r'^\d+_?', '', topic)
-            key = raw.lower()
+            key = raw.lower().replace('_', '').replace(' ', '')
 
-            # 2) apply override or default Title Case
+            # override or Title Case
             display = DISPLAY_OVERRIDES.get(
                 key,
                 raw.replace('_', ' ').title()
