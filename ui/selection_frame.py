@@ -3,6 +3,8 @@
 import re
 import customtkinter as ctk
 
+from constants import resource_path  # ✅ Prepares for bundled asset support
+
 DISPLAY_OVERRIDES = {
     'basicverbs':     'Basic Verbs',
     'commonphrases':  'Common Phrases',
@@ -37,15 +39,15 @@ class SelectionFrame(ctk.CTkFrame):
         self.lesson_buttons = []
 
         for idx, fn in enumerate(sublessons):
-            base = fn[:-4]
+            base = fn[:-4]  # strip ".csv"
             if base.startswith('match_'):
                 title_key = base.split('match_', 1)[1]
                 title = title_key.replace('_', ' ').title()
                 text = f'{self.display_name} Matching: {title}'
             elif base.startswith('sentence_'):
-                text = f'{self.display_name} Sentence Builder: {idx+1}'
+                text = f'{self.display_name} Sentence Builder: {idx + 1}'
             else:
-                text = f'{self.display_name} Definitions: {idx+1}'
+                text = f'{self.display_name} Definitions: {idx + 1}'
 
             btn = ctk.CTkButton(
                 self.lesson_scroll,

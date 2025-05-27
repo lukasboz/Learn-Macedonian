@@ -1,4 +1,7 @@
+# FILE: ui/menu_frame.py
+
 import customtkinter as ctk
+from constants import resource_path  # ✅ future-proofing for asset access
 
 DISPLAY_OVERRIDES = {
     'basicverbs': 'Basic Verbs',

@@ -4,6 +4,8 @@
 import customtkinter as ctk
 import tkinter.messagebox as mb
 
+from constants import resource_path  # 🔁 Added for future file compatibility
+
 class MatchFrame(ctk.CTkFrame):
     def __init__(self, master, on_finish, on_back):
         super().__init__(master)
@@ -82,19 +84,16 @@ class MatchFrame(ctk.CTkFrame):
         self.pack()
 
     def select_left(self, item):
-        # simply record which left‐item is selected—
-        # no color change here, so it stays darkblue
         self.selected_left = item
 
     def select_right(self, item):
         if not self.selected_left:
-            mb.showwarning('Select first','Please pick an English term first.')
+            mb.showwarning('Select first', 'Please pick an English term first.')
             return
 
         correct = self.match.mapping[self.selected_left]
         if item == correct:
-            mb.showinfo('Correct','Good match!')
-            # disable both with default darkblue background
+            mb.showinfo('Correct', 'Good match!')
             self.left_btns[self.selected_left].configure(
                 fg_color=self.default_color,
                 state='disabled'
@@ -106,12 +105,10 @@ class MatchFrame(ctk.CTkFrame):
             self.matched_count += 1
 
             if self.matched_count == self.total:
-                mb.showinfo('Done','All pairs matched!')
+                mb.showinfo('Done', 'All pairs matched!')
                 self.on_finish(self.sublesson_index, self.total)
                 self.pack_forget()
         else:
-            mb.showinfo('Incorrect','Try again.')
-            # no need to reset color—nothing changed
+            mb.showinfo('Incorrect', 'Try again.')
 
-        # clear your selection
         self.selected_left = None

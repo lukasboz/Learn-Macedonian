@@ -1,9 +1,11 @@
+# FILE: app.py
+
 import os
 from tkinter import PhotoImage
 import customtkinter as ctk
 import tkinter.messagebox as mb
 
-from constants import BASE_DIR, LESSONS_DIR
+from constants import resource_path
 from lesson import Lesson
 from matching import MatchingLesson
 from sentence_builder import SentenceBuilderLesson
@@ -18,14 +20,6 @@ from ui.sentence_builder_frame import SentenceBuilderFrame
 class LearnMacedonianApp(ctk.CTk):
     def __init__(self):
         super().__init__()
-
-        icon_path = os.path.join(BASE_DIR, 'mk_flag.png')
-        if os.path.exists(icon_path):
-            try:
-                flag_img = PhotoImage(file=icon_path)
-                self.iconphoto(True, flag_img)
-            except Exception:
-                pass
 
         # Set window size and center it
         self.title('Learn Macedonian')
@@ -42,14 +36,14 @@ class LearnMacedonianApp(ctk.CTk):
         self._create_frames()
 
     def _load_data(self):
+        lessons_path = resource_path('lessons')
         self.topics = sorted(
-            d for d in os.listdir(LESSONS_DIR)
-            if os.path.isdir(os.path.join(LESSONS_DIR, d))
+            d for d in os.listdir(lessons_path)
+            if os.path.isdir(os.path.join(lessons_path, d))
         )
         self.unlocked_topic, self.topic_progress = load_progress()
 
     def _create_frames(self):
-        # Initialize menu without filling entire window
         self.menu = MenuFrame(
             master=self,
             topics=self.topics,
@@ -59,10 +53,8 @@ class LearnMacedonianApp(ctk.CTk):
             on_reset=self.reset_progress,
             on_exit=self.destroy
         )
-        # Pack menu with padding and center it
         self.menu.pack(padx=50, pady=50)
 
-        # Prepare other frames
         self.quiz = QuizFrame(master=self, on_finish=self.finish_sublesson, on_back=self.back_to_selection)
         self.match = MatchFrame(master=self, on_finish=self.finish_sublesson, on_back=self.back_to_selection)
         self.sentence_builder = SentenceBuilderFrame(
@@ -70,11 +62,12 @@ class LearnMacedonianApp(ctk.CTk):
         )
 
     def view_progress(self):
+        lessons_path = resource_path('lessons')
         lines = []
         for topic, data in self.topic_progress.items():
             name = topic.split('_', 1)[1].replace('_', ' ').title()
             completed = data.get('completed', 0)
-            path = os.path.join(LESSONS_DIR, topic)
+            path = os.path.join(lessons_path, topic)
             total = len([f for f in os.listdir(path) if f.endswith('.csv')])
             lines.append(f"{name}: {completed}/{total}")
         msg = "\n".join(lines) if lines else "No progress to show yet."
@@ -97,8 +90,8 @@ class LearnMacedonianApp(ctk.CTk):
     def show_lessons(self, topic_idx):
         topic = self.topics[topic_idx]
         display = topic.split('_', 1)[1].replace('_', ' ').title()
-        path = os.path.join(LESSONS_DIR, topic)
-        files = sorted(f for f in os.listdir(path) if f.endswith('.csv'))
+        topic_path = os.path.join(resource_path('lessons'), topic)
+        files = sorted(f for f in os.listdir(topic_path) if f.endswith('.csv'))
 
         self.menu.pack_forget()
         self.selection = SelectionFrame(
@@ -115,7 +108,7 @@ class LearnMacedonianApp(ctk.CTk):
         topic = self.topics[topic_idx]
         display = topic.split('_', 1)[1].replace('_', ' ').title()
         fn = self.sublessons[sub_idx]
-        filepath = os.path.join(LESSONS_DIR, topic, fn)
+        filepath = os.path.join(resource_path('lessons'), topic, fn)
 
         if fn.startswith('match_'):
             obj = MatchingLesson(filepath)
@@ -149,7 +142,6 @@ class LearnMacedonianApp(ctk.CTk):
     def back_to_menu(self):
         if hasattr(self, 'selection'):
             self.selection.pack_forget()
-        # Re-pack menu with padding
         self.menu.pack(padx=50, pady=50)
 
     def back_to_selection(self):

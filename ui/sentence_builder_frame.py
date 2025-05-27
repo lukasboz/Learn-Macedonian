@@ -4,6 +4,8 @@ import random
 import customtkinter as ctk
 import tkinter.messagebox as mb
 
+from constants import resource_path  # ✅ for future compatibility with packaged assets
+
 class SentenceBuilderFrame(ctk.CTkFrame):
     def __init__(self, master, on_finish, on_back):
         super().__init__(master)
@@ -12,7 +14,7 @@ class SentenceBuilderFrame(ctk.CTkFrame):
 
         # English or Macedonian prompt
         self.prompt_label = ctk.CTkLabel(self, font=('Arial', 18, 'bold'))
-        self.prompt_label.pack(pady=(10,5))
+        self.prompt_label.pack(pady=(10, 5))
 
         # Build area
         self.build_frame = ctk.CTkFrame(self)
@@ -23,26 +25,26 @@ class SentenceBuilderFrame(ctk.CTkFrame):
         ctrl.pack(pady=5)
         self.remove_btn = ctk.CTkButton(ctrl, text='Remove Last', command=self.remove_block)
         self.remove_btn.grid(row=0, column=0, padx=8)
-        self.submit_btn = ctk.CTkButton(ctrl, text='Submit',       command=self.check_answer)
+        self.submit_btn = ctk.CTkButton(ctrl, text='Submit', command=self.check_answer)
         self.submit_btn.grid(row=0, column=1, padx=8)
-        self.back_btn   = ctk.CTkButton(ctrl, text='Back',         command=self._handle_back)
+        self.back_btn = ctk.CTkButton(ctrl, text='Back', command=self._handle_back)
         self.back_btn.grid(row=0, column=2, padx=8)
 
         # Block pool
         self.pool_frame = ctk.CTkFrame(self)
-        self.pool_frame.pack(pady=(10,20))
+        self.pool_frame.pack(pady=(10, 20))
 
         # State
-        self.lesson    = None
-        self.idx       = 0
-        self.built     = []
+        self.lesson = None
+        self.idx = 0
+        self.built = []
         self.block_buttons = []
         self.direction = 'en->mk'  # or 'mk->en'
 
     def start(self, lesson_obj, topic_display, sub_idx, direction):
         """Initialize with a SentenceBuilderLesson and direction."""
-        self.lesson    = lesson_obj
-        self.idx       = 0
+        self.lesson = lesson_obj
+        self.idx = 0
         self.direction = direction  # 'en->mk' or 'mk->en'
         self.built.clear()
         self._show_sentence()
@@ -90,7 +92,7 @@ class SentenceBuilderFrame(ctk.CTkFrame):
 
     def _add_block(self, txt):
         self.built.append(txt)
-        ctk.CTkLabel(self.build_frame, text=txt, font=('Arial',14), fg_color='gray80')\
+        ctk.CTkLabel(self.build_frame, text=txt, font=('Arial', 14), fg_color='gray80') \
             .pack(side='left', padx=3)
         # disable pool button
         for btn in self.block_buttons:
@@ -125,7 +127,7 @@ class SentenceBuilderFrame(ctk.CTkFrame):
             if self.idx < self.lesson.total:
                 self._show_sentence()
             else:
-                self.on_finish(self.idx-1, None)
+                self.on_finish(self.idx - 1, None)
                 self.pack_forget()
         else:
             mb.showerror(

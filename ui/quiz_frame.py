@@ -1,4 +1,3 @@
-
 # FILE: ui/quiz_frame.py
 
 import os
@@ -10,6 +9,8 @@ import asyncio
 import customtkinter as ctk
 import tkinter.messagebox as mb
 from edge_tts import Communicate
+
+from constants import resource_path  # ✅ for future resource loading compatibility
 
 class QuizFrame(ctk.CTkFrame):
     def __init__(self, master, on_finish, on_back):
@@ -79,21 +80,23 @@ class QuizFrame(ctk.CTkFrame):
         self.sublesson_index = sub_idx
         self.card_idx = 0
         self.score = 0
-        self.topic_label.configure(text=f'{topic_display} - Definitions {sub_idx+1}')
+        self.topic_label.configure(text=f'{topic_display} - Definitions {sub_idx + 1}')
         self.show_card()
         self.pack(fill='both', expand=True)
 
     def show_card(self):
         for path in self._audio_cache.values():
-            try: os.remove(path)
-            except: pass
+            try:
+                os.remove(path)
+            except:
+                pass
         self._audio_cache.clear()
 
         total = len(self.lesson.cards)
         if self.card_idx >= total:
             return self.finish()
 
-        self.qnum_label.configure(text=f'Question {self.card_idx+1} of {total}')
+        self.qnum_label.configure(text=f'Question {self.card_idx + 1} of {total}')
         q, a = self.lesson.cards[self.card_idx]
         self.question_label.configure(text=f"Translate '{q}' into Macedonian:")
 
@@ -102,7 +105,9 @@ class QuizFrame(ctk.CTkFrame):
         self.choice_buttons.clear()
         self.choice_var.set('')
 
-        opts = random.sample([ans for ans in self.lesson.all_answers if ans != a], 3) + [a]
+        opts = random.sample(
+            [ans for ans in self.lesson.all_answers if ans != a], 3
+        ) + [a]
         random.shuffle(opts)
 
         for opt in opts:
