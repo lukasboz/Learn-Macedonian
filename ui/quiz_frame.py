@@ -1,3 +1,4 @@
+
 # FILE: ui/quiz_frame.py
 
 import os
@@ -18,44 +19,40 @@ class QuizFrame(ctk.CTkFrame):
         # MCI interface for playback
         self._mci = ctypes.windll.winmm.mciSendStringW
 
-        # Lesson title
-        self.topic_label = ctk.CTkLabel(self, font=('Arial', 18, 'bold'))
+        # Center container for 16:9 scaling
+        self.container = ctk.CTkFrame(self)
+        self.container.pack(expand=True)
+
+        self.topic_label = ctk.CTkLabel(self.container, font=('Arial', 18, 'bold'))
         self.topic_label.pack(pady=(10, 5))
 
-        # Question counter
-        self.qnum_label = ctk.CTkLabel(self, font=('Arial', 14))
+        self.qnum_label = ctk.CTkLabel(self.container, font=('Arial', 14))
         self.qnum_label.pack(pady=(0, 10))
 
-        # Question prompt
-        self.question_label = ctk.CTkLabel(self, wraplength=480, font=('Arial', 16))
+        self.question_label = ctk.CTkLabel(self.container, wraplength=720, font=('Arial', 16))
         self.question_label.pack(pady=5)
 
-        # Container for answer buttons
-        self.choice_frame = ctk.CTkFrame(self)
+        self.choice_frame = ctk.CTkFrame(self.container)
         self.choice_frame.pack(pady=10)
 
         self.choice_var = ctk.StringVar()
         self.choice_buttons = []
 
-        # Navigation (Previous / Submit)
-        nav_frame = ctk.CTkFrame(self)
+        nav_frame = ctk.CTkFrame(self.container)
         nav_frame.pack(pady=5)
         self.prev_btn = ctk.CTkButton(nav_frame, text='Previous', command=self.prev_card)
         self.prev_btn.grid(row=0, column=0, padx=10)
         self.submit_btn = ctk.CTkButton(nav_frame, text='Submit', command=self.check_answer)
         self.submit_btn.grid(row=0, column=1, padx=10)
 
-        # Internal state
         self.card_idx = 0
         self.score = 0
         self.lesson = None
         self.sublesson_index = None
 
-        # Cache of synthesized audio files by option text
         self._audio_cache = {}
 
     def _prefetch_audio(self, text: str):
-        # Background thread to fetch and save TTS audio for a given text.
         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
         mp3_path = tmp.name
         tmp.close()
@@ -64,13 +61,11 @@ class QuizFrame(ctk.CTkFrame):
         self._audio_cache[text] = mp3_path
 
     def _play_audio(self, path: str):
-        # Play an audio file via Windows MCI asynchronously.
         alias = f"tts_{os.path.basename(path)}"
         self._mci(f'open "{path}" type mpegvideo alias {alias}', None, 0, None)
         self._mci(f'play {alias}', None, 0, None)
 
     def speak(self, text: str):
-        # Play pre-fetched audio if available, else spawn synthesis then play.
         if text in self._audio_cache:
             self._play_audio(self._audio_cache[text])
         else:
@@ -89,12 +84,9 @@ class QuizFrame(ctk.CTkFrame):
         self.pack(fill='both', expand=True)
 
     def show_card(self):
-        # Clear previous cache and files
         for path in self._audio_cache.values():
-            try:
-                os.remove(path)
-            except:
-                pass
+            try: os.remove(path)
+            except: pass
         self._audio_cache.clear()
 
         total = len(self.lesson.cards)
@@ -124,7 +116,6 @@ class QuizFrame(ctk.CTkFrame):
             )
             btn.pack(fill='x', pady=8)
             self.choice_buttons.append(btn)
-            # Start prefetching this option’s audio immediately
             threading.Thread(target=self._prefetch_audio, args=(opt,), daemon=True).start()
 
     def select_answer(self, choice):
@@ -132,7 +123,7 @@ class QuizFrame(ctk.CTkFrame):
         self.speak(choice)
         for btn in self.choice_buttons:
             btn.configure(
-                fg_color=('lightblue','blue') if btn.cget('text') == choice else 'darkblue'
+                fg_color=('lightblue', 'blue') if btn.cget('text') == choice else 'darkblue'
             )
 
     def check_answer(self):
